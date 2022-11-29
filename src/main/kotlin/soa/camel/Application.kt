@@ -47,13 +47,15 @@ class Router(meterRegistry: MeterRegistry) : RouteBuilder() {
                 val keywords: String = exchange.getIn().getHeader("keywords") as? String ?: ""
                 val (max, remain) = keywords.split(" ").partition { it.startsWith("max") }
                 exchange.getIn().setHeader("keywords", remain.joinToString(" "))
-                exchange.getIn().setHeader("count", 5)
+                val cinco = 5
+                val cuatro = 4
+                exchange.getIn().setHeader("count", cinco)
                 max.firstOrNull()
-                    ?.drop(4)
+                    ?.drop(cuatro)
                     ?.toIntOrNull()
                     ?.let { count ->
                         exchange.getIn().setHeader("count", count)
-                }
+                    }
             }
             .toD("twitter-search:\${header.keywords}?count=\${header.count}")
             .wireTap(LOG_ROUTE)
@@ -68,7 +70,7 @@ class Router(meterRegistry: MeterRegistry) : RouteBuilder() {
             .process { exchange ->
                 val keyword = exchange.getIn().getHeader("keywords") as? String
                 keyword?.split(" ")?.map { perKeywordMessages.increment(it) }
-        }
+            }
     }
 }
 
