@@ -49,25 +49,25 @@ class Router(meterRegistry: MeterRegistry) : RouteBuilder() {
                 exchange.getIn().setHeader("keywords", remain.joinToString(" "))
                 exchange.getIn().setHeader("count", 5)
                 max.firstOrNull()
-                        ?.drop(4)
-                        ?.toIntOrNull()
-                        ?.let { count
-                            -> exchange.getIn().setHeader("count", count)
-                        }
+                    ?.drop(4)
+                    ?.toIntOrNull()
+                    ?.let { count ->
+                        exchange.getIn().setHeader("count", count)
+                }
             }
             .toD("twitter-search:\${header.keywords}?count=\${header.count}")
             .wireTap(LOG_ROUTE)
             .wireTap(COUNT_ROUTE)
 
-    from(LOG_ROUTE)
-        .marshal().json(JsonLibrary.Gson)
-        .to("file://log?fileName=\${date:now:yyyy/MM/dd/HH-mm-ss.SSS}.json")
+        from(LOG_ROUTE)
+            .marshal().json(JsonLibrary.Gson)
+            .to("file://log?fileName=\${date:now:yyyy/MM/dd/HH-mm-ss.SSS}.json")
 
-    from(COUNT_ROUTE)
-        .split(body())
-        .process { exchange ->
-            val keyword = exchange.getIn().getHeader("keywords") as? String
-            keyword?.split(" ")?.map { perKeywordMessages.increment(it) }
+        from(COUNT_ROUTE)
+            .split(body())
+            .process { exchange ->
+                val keyword = exchange.getIn().getHeader("keywords") as? String
+                keyword?.split(" ")?.map { perKeywordMessages.increment(it) }
         }
     }
 }
